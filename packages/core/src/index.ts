@@ -16,3 +16,9 @@ export {
   calculateCategoryScores,
   buildSummary,
 } from './scoring/rubric.js';
+
+export { loadConfig, shouldIgnoreFile, isRuleDisabled, getRuleSeverity, isSecretAllowed } from './config.js';
+export type { Config } from './config.js';
+export { suggestFixes } from './fix/engine.js';
+export { generatePatches } from './fix/patcher.js';
+export type { Patch } from './fix/patcher.js';

@@ -18,6 +18,14 @@ import type { Report } from '../../core/src/types/report.js';
 import type { Finding } from '../../core/src/types/finding.js';
 
 import { SecurityAgent } from '../../workers/agents/security/src/index.js';
+import { DatabaseAgent } from '../../workers/agents/database/src/index.js';
+import { InfrastructureAgent } from '../../workers/agents/infrastructure/src/index.js';
+import { ObservabilityAgent } from '../../workers/agents/observability/src/index.js';
+import { QualityAgent } from '../../workers/agents/quality/src/index.js';
+import { loadConfig, shouldIgnoreFile, isRuleDisabled, getRuleSeverity, isSecretAllowed } from '../../core/src/config.js';
+import { suggestFixes } from '../../core/src/fix/engine.js';
+import { generatePatches } from '../../core/src/fix/patcher.js';
+import type { Config } from '../../core/src/config.js';
 
 import { renderScoreGauge } from './display/score-gauge.js';
 import { renderFindingsTable } from './display/findings-table.js';
@@ -25,7 +33,7 @@ import { Progress } from './display/progress.js';
 import { generateMarkdownReport } from './report/markdown.js';
 import { generateJsonReport } from './report/json.js';
 
-const VERSION = '0.0.1';
+const VERSION = '0.1.0';
 
 const ANSI = {
   reset: '\x1b[0m',
@@ -214,6 +222,7 @@ function printHelp(noColor: boolean) {
   console.log(`  ${b}USAGE${r}`);
   console.log(`     last-mile scan <path>    Scan a project directory`);
   console.log(`     last-mile score <path>   Show score gauge only`);
+  console.log(`     last-mile fix <path>     Show auto-fix patches`);
   console.log('');
   console.log(`  ${b}FLAGS${r}`);
   console.log(`     --json       Output report as JSON`);
@@ -221,10 +230,17 @@ function printHelp(noColor: boolean) {
   console.log(`     --verbose    Show all findings with fixes`);
   console.log(`     --no-color   Disable ANSI color codes`);
   console.log('');
+  console.log(`  ${b}CONFIG${r}`);
+  console.log(`     Create ${c}.last-mile.yml${r} in your project root to:`);
+  console.log(`     - Disable rules:     ${d}policy.disable: [console-log-in-production]${r}`);
+  console.log(`     - Ignore files:      ${d}policy.ignore: ["**/test-fixtures/**"]${r}`);
+  console.log(`     - Allow secrets:     ${d}allow-secrets: [".env", ".env.local"]${r}`);
+  console.log(`     - Override severity: ${d}policy.override: { cors-wildcard: warning }${r}`);
+  console.log('');
   console.log(`  ${b}EXAMPLES${r}`);
   console.log(`     ${d}$ npx tsx packages/cli/src/index.ts scan .${r}`);
   console.log(`     ${d}$ npx tsx packages/cli/src/index.ts scan ./my-app --json${r}`);
-  console.log(`     ${d}$ npx tsx packages/cli/src/index.ts score . --no-color${r}`);
+  console.log(`     ${d}$ npx tsx packages/cli/src/index.ts fix . --verbose${r}`);
   console.log('');
 }
 
@@ -238,7 +254,7 @@ async function main() {
     process.exit(0);
   }
 
-  if (command !== 'scan' && command !== 'score') {
+  if (command !== 'scan' && command !== 'score' && command !== 'fix') {
     console.error(`  Unknown command: ${command}`);
     console.error(`  Run without arguments for help.`);
     process.exit(1);
@@ -269,16 +285,48 @@ async function main() {
     printStack(codebase, flags.noColor);
   }
 
-  // Step 3: Run security agent
-  if (!flags.json) progress.start('Running security agent');
+  // Step 3: Load config
+  const config = loadConfig(absPath);
 
-  const securityAgent = new SecurityAgent();
-  const findings = await securityAgent.scan(codebase);
+  // Apply config-based file filtering
+  codebase.files = codebase.files.filter(f => !shouldIgnoreFile(config, f));
+
+  // Step 4: Run all agents
+  const agents = [
+    ...(config.agents.security ? [new SecurityAgent()] : []),
+    ...(config.agents.database ? [new DatabaseAgent()] : []),
+    ...(config.agents.infrastructure ? [new InfrastructureAgent()] : []),
+    ...(config.agents.observability ? [new ObservabilityAgent()] : []),
+    ...(config.agents.quality ? [new QualityAgent()] : []),
+  ];
+
+  let allFindings: Finding[] = [];
+
+  for (const agent of agents) {
+    if (!flags.json) progress.start(`Running ${agent.name}`);
+    const agentFindings = await agent.scan(codebase);
+    allFindings.push(...agentFindings);
+  }
 
   if (!flags.json) progress.done();
 
-  // Step 4: Build report
-  const report = buildReport(projectName, codebase, findings);
+  // Step 5: Apply config filters
+  allFindings = allFindings
+    .filter(f => !isRuleDisabled(config, f.ruleId))
+    .filter(f => {
+      if (f.ruleId.startsWith('secrets/') && isSecretAllowed(config, f.file)) return false;
+      return true;
+    })
+    .map(f => ({
+      ...f,
+      severity: getRuleSeverity(config, f.ruleId, f.severity),
+    }));
+
+  // Step 6: Add fix suggestions
+  allFindings = suggestFixes(allFindings);
+
+  // Step 7: Build report
+  const report = buildReport(projectName, codebase, allFindings);
 
   // Step 5: Output
   if (flags.json) {
@@ -317,6 +365,42 @@ async function main() {
       const bar = `${color}${'█'.repeat(filled)}${d}${'░'.repeat(empty)}${r}`;
       const label = (cat.charAt(0).toUpperCase() + cat.slice(1)).padEnd(16);
       console.log(`     ${label} ${bar} ${color}${data.score}${r}/100 ${d}(${data.findings} findings)${r}`);
+    }
+    console.log('');
+  }
+
+  // Fix command — show patches
+  if (command === 'fix') {
+    const patches = generatePatches(report.findings, codebase);
+    const r = flags.noColor ? '' : ANSI.reset;
+    const b = flags.noColor ? '' : ANSI.bold;
+    const g = flags.noColor ? '' : ANSI.green;
+    const d = flags.noColor ? '' : ANSI.dim;
+    const c = flags.noColor ? '' : ANSI.cyan;
+
+    if (patches.length === 0) {
+      console.log(`  ${g}No auto-fixable issues found.${r}`);
+    } else {
+      console.log(`  ${b}AUTO-FIX PATCHES${r} ${d}(${patches.length} available)${r}`);
+      console.log('');
+      for (const patch of patches) {
+        const action = patch.action === 'create' ? `${g}CREATE${r}` : patch.action === 'append' ? `${c}APPEND${r}` : `${ANSI.yellow}MODIFY${r}`;
+        console.log(`  ${action} ${b}${patch.file}${r}`);
+        console.log(`  ${d}${patch.description}${r}`);
+        if (flags.verbose) {
+          console.log(`  ${d}${'─'.repeat(60)}${r}`);
+          const lines = patch.content.split('\n').slice(0, 20);
+          for (const line of lines) {
+            console.log(`  ${d}│${r} ${line}`);
+          }
+          if (patch.content.split('\n').length > 20) {
+            console.log(`  ${d}│ ... (${patch.content.split('\n').length - 20} more lines)${r}`);
+          }
+          console.log(`  ${d}${'─'.repeat(60)}${r}`);
+        }
+        console.log('');
+      }
+      console.log(`  ${d}To apply: review each patch and apply manually, or use --verbose to see full content.${r}`);
     }
     console.log('');
   }
