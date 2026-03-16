@@ -1,0 +1,23 @@
+rules:
+  - id: jwt-decode-not-verify
+    patterns:
+      - pattern: jwt.decode($TOKEN, ...)
+      - pattern-not-inside: |
+          jwt.verify(...)
+          ...
+          jwt.decode($TOKEN, ...)
+      - pattern-not-inside: |
+          jwt.decode($TOKEN, ...)
+          ...
+          jwt.verify(...)
+    message: >
+      jwt.decode() does not verify the token signature and should not be
+      used for authentication. Use jwt.verify(token, secret) to validate
+      the token's integrity and authenticity.
+    severity: ERROR
+    metadata:
+      cwe: "CWE-347: Improper Verification of Cryptographic Signature"
+      category: security
+      confidence: HIGH
+      impact: HIGH
+    languages: [javascript, typescript]

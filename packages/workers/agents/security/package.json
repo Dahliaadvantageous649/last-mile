@@ -1,0 +1,9 @@
+{
+  "name": "@last-mile/agent-security",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

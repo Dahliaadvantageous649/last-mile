@@ -1,0 +1,25 @@
+rules:
+  - id: express-no-helmet
+    patterns:
+      - pattern: |
+          const $APP = express()
+      - pattern-not-inside: |
+          ...
+          $APP.use(helmet(...))
+          ...
+      - pattern-not-inside: |
+          ...
+          $APP.use(helmet())
+          ...
+    message: >
+      Express app without helmet() middleware. Helmet sets security-related
+      HTTP headers (X-Content-Type-Options, Strict-Transport-Security, etc.)
+      that protect against common attacks. Install and use it:
+      app.use(helmet())
+    severity: WARNING
+    metadata:
+      cwe: "CWE-693: Protection Mechanism Failure"
+      category: security
+      confidence: MEDIUM
+      framework: express
+    languages: [javascript, typescript]

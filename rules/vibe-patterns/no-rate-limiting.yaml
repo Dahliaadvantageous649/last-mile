@@ -1,0 +1,53 @@
+rules:
+  - id: no-rate-limiting
+    patterns:
+      - pattern-either:
+          - pattern: |
+              const $APP = express()
+          - pattern: |
+              const $APP = require("express")()
+      - pattern-not-inside: |
+          ...
+          $APP.use(rateLimit(...))
+          ...
+      - pattern-not-inside: |
+          ...
+          $APP.use($LIMITER)
+          ...
+    message: >
+      Express app initialized without rate limiting middleware. Add
+      rate limiting to prevent abuse and DDoS attacks:
+      app.use(rateLimit({ windowMs: 15*60*1000, max: 100 }))
+    severity: WARNING
+    metadata:
+      cwe: "CWE-770: Allocation of Resources Without Limits"
+      category: security
+      confidence: LOW
+      owasp: "A05:2021 - Security Misconfiguration"
+    languages: [javascript, typescript]
+
+  - id: auth-route-no-rate-limit
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $APP.post("/login", ...)
+          - pattern: |
+              $APP.post("/auth/login", ...)
+          - pattern: |
+              $APP.post("/api/auth/login", ...)
+          - pattern: |
+              $APP.post("/register", ...)
+          - pattern: |
+              $APP.post("/signup", ...)
+          - pattern: |
+              $APP.post("/api/auth/register", ...)
+    message: >
+      Authentication endpoint without dedicated rate limiting. Apply
+      stricter rate limits to auth routes to prevent brute force attacks:
+      app.post("/login", loginLimiter, handler)
+    severity: WARNING
+    metadata:
+      cwe: "CWE-770: Allocation of Resources Without Limits"
+      category: security
+      confidence: MEDIUM
+    languages: [javascript, typescript]

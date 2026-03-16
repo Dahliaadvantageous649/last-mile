@@ -1,0 +1,89 @@
+rules:
+  - id: no-input-validation-body
+    patterns:
+      - pattern-either:
+          - pattern: |
+              function $HANDLER($REQ, $RES) {
+                ...
+                $REQ.body
+                ...
+              }
+          - pattern: |
+              ($REQ, $RES) => {
+                ...
+                $REQ.body
+                ...
+              }
+          - pattern: |
+              async function $HANDLER($REQ, $RES) {
+                ...
+                $REQ.body
+                ...
+              }
+          - pattern: |
+              async ($REQ, $RES) => {
+                ...
+                $REQ.body
+                ...
+              }
+      - pattern-not-inside: |
+          function $HANDLER($REQ, $RES) {
+            ...
+            $VALIDATE($REQ.body)
+            ...
+          }
+      - pattern-not-inside: |
+          ($REQ, $RES) => {
+            ...
+            $SCHEMA.validate($REQ.body)
+            ...
+          }
+      - pattern-not-inside: |
+          ($REQ, $RES) => {
+            ...
+            $SCHEMA.parse($REQ.body)
+            ...
+          }
+    message: >
+      Route handler accesses req.body without input validation. Validate
+      inputs using a schema library (e.g., Zod, Joi, Yup) to prevent
+      injection and type confusion attacks.
+    severity: WARNING
+    metadata:
+      cwe: "CWE-20: Improper Input Validation"
+      category: security
+      confidence: MEDIUM
+      owasp: "A03:2021 - Injection"
+    languages: [javascript, typescript]
+
+  - id: no-input-validation-params
+    patterns:
+      - pattern-either:
+          - pattern: |
+              function $HANDLER($REQ, $RES) {
+                ...
+                $REQ.params.$PARAM
+                ...
+              }
+          - pattern: |
+              ($REQ, $RES) => {
+                ...
+                $REQ.params.$PARAM
+                ...
+              }
+          - pattern: |
+              async ($REQ, $RES) => {
+                ...
+                $REQ.params.$PARAM
+                ...
+              }
+    message: >
+      Route handler accesses req.params without validation. Validate and
+      sanitize URL parameters before use to prevent injection attacks.
+    severity: WARNING
+    metadata:
+      cwe: "CWE-20: Improper Input Validation"
+      category: security
+      confidence: MEDIUM
+      owasp: "A03:2021 - Injection"
+    languages: [javascript, typescript]

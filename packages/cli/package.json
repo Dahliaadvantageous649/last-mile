@@ -1,0 +1,13 @@
+{
+  "name": "@last-mile/cli",
+  "version": "0.0.1",
+  "private": true,
+  "bin": {
+    "last-mile": "bin/last-mile.ts"
+  },
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "scan": "npx tsx src/index.ts scan"
+  }
+}

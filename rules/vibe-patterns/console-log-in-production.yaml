@@ -1,0 +1,25 @@
+rules:
+  - id: console-log-in-production
+    pattern-either:
+      - pattern: console.log(...)
+      - pattern: console.warn(...)
+      - pattern: console.error(...)
+      - pattern: console.debug(...)
+      - pattern: console.info(...)
+    paths:
+      exclude:
+        - "*.test.*"
+        - "*.spec.*"
+        - "__tests__/*"
+        - "test/*"
+        - "tests/*"
+        - "*.config.*"
+    message: >
+      console.log/warn/error found in production code. Use a structured
+      logger (e.g., winston, pino) for production logging, or remove
+      debug statements before shipping.
+    severity: INFO
+    metadata:
+      category: quality
+      confidence: LOW
+    languages: [javascript, typescript]

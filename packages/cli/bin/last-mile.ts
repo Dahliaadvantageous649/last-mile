@@ -1,1 +1,2 @@
-// CLI binary entry point
+#!/usr/bin/env npx tsx
+import '../src/index.js';

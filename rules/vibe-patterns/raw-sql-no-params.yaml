@@ -1,0 +1,47 @@
+rules:
+  - id: raw-sql-string-concat
+    pattern-either:
+      - pattern: |
+          $DB.query("..." + $VAR)
+      - pattern: |
+          $DB.query("..." + $VAR + "...")
+      - pattern: |
+          $DB.execute("..." + $VAR)
+      - pattern: |
+          $DB.execute("..." + $VAR + "...")
+      - pattern: |
+          $DB.raw("..." + $VAR)
+      - pattern: |
+          $DB.raw("..." + $VAR + "...")
+    message: >
+      SQL query built with string concatenation is vulnerable to SQL injection.
+      Use parameterized queries instead:
+      db.query("SELECT * FROM users WHERE id = $1", [id])
+    severity: ERROR
+    metadata:
+      cwe: "CWE-89: SQL Injection"
+      category: security
+      confidence: HIGH
+      impact: HIGH
+      owasp: "A03:2021 - Injection"
+    languages: [javascript, typescript]
+
+  - id: raw-sql-template-literal
+    patterns:
+      - pattern: |
+          $DB.$METHOD(`...${$VAR}...`)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(query|execute|raw|exec|prepare|run)$
+    message: >
+      SQL query built with template literal interpolation is vulnerable to
+      SQL injection. Use parameterized queries instead:
+      db.query("SELECT * FROM users WHERE id = $1", [id])
+    severity: ERROR
+    metadata:
+      cwe: "CWE-89: SQL Injection"
+      category: security
+      confidence: HIGH
+      impact: HIGH
+      owasp: "A03:2021 - Injection"
+    languages: [javascript, typescript]

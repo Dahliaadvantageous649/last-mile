@@ -1,0 +1,108 @@
+rules:
+  - id: nextjs-api-route-no-auth-pages
+    patterns:
+      - pattern-either:
+          - pattern: |
+              export default function $HANDLER($REQ, $RES) {
+                ...
+              }
+          - pattern: |
+              export default async function $HANDLER($REQ, $RES) {
+                ...
+              }
+      - pattern-not-inside: |
+          export default function $HANDLER($REQ, $RES) {
+            ...
+            $AUTH($REQ, ...)
+            ...
+          }
+      - pattern-not-inside: |
+          export default async function $HANDLER($REQ, $RES) {
+            ...
+            $AUTH($REQ, ...)
+            ...
+          }
+      - pattern-not-inside: |
+          export default function $HANDLER($REQ, $RES) {
+            ...
+            getSession(...)
+            ...
+          }
+      - pattern-not-inside: |
+          export default async function $HANDLER($REQ, $RES) {
+            ...
+            getSession(...)
+            ...
+          }
+      - pattern-not-inside: |
+          export default async function $HANDLER($REQ, $RES) {
+            ...
+            getServerSession(...)
+            ...
+          }
+    paths:
+      include:
+        - "pages/api/*"
+    message: >
+      Next.js API route without authentication check. Verify user
+      identity with getSession(), getServerSession(), or a custom auth
+      middleware before processing requests.
+    severity: WARNING
+    metadata:
+      cwe: "CWE-306: Missing Authentication for Critical Function"
+      category: security
+      confidence: MEDIUM
+      framework: nextjs
+    languages: [javascript, typescript]
+
+  - id: nextjs-api-route-no-auth-app
+    patterns:
+      - pattern-either:
+          - pattern: |
+              export async function GET($REQUEST) {
+                ...
+              }
+          - pattern: |
+              export async function POST($REQUEST) {
+                ...
+              }
+          - pattern: |
+              export async function PUT($REQUEST) {
+                ...
+              }
+          - pattern: |
+              export async function DELETE($REQUEST) {
+                ...
+              }
+      - pattern-not-inside: |
+          export async function $METHOD($REQUEST) {
+            ...
+            getServerSession(...)
+            ...
+          }
+      - pattern-not-inside: |
+          export async function $METHOD($REQUEST) {
+            ...
+            auth(...)
+            ...
+          }
+      - pattern-not-inside: |
+          export async function $METHOD($REQUEST) {
+            ...
+            $AUTH($REQUEST, ...)
+            ...
+          }
+    paths:
+      include:
+        - "app/api/*"
+    message: >
+      Next.js App Router API route without authentication check. Call
+      getServerSession() or auth() to verify the user before processing
+      the request.
+    severity: WARNING
+    metadata:
+      cwe: "CWE-306: Missing Authentication for Critical Function"
+      category: security
+      confidence: MEDIUM
+      framework: nextjs
+    languages: [javascript, typescript]

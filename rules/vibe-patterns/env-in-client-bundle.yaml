@@ -1,0 +1,32 @@
+rules:
+  - id: env-in-client-bundle
+    patterns:
+      - pattern: process.env.$VAR
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: ^(?!NEXT_PUBLIC_|REACT_APP_|VITE_).*
+      - pattern-not-inside: |
+          "use server"
+          ...
+    paths:
+      include:
+        - "src/components/*"
+        - "src/pages/*"
+        - "app/*"
+        - "pages/*"
+      exclude:
+        - "pages/api/*"
+        - "app/api/*"
+        - "*.server.*"
+    message: >
+      process.env.$VAR accessed in client-side code. Server-only env vars
+      are not available in the browser and may leak secrets. Use NEXT_PUBLIC_
+      (Next.js), REACT_APP_ (CRA), or VITE_ (Vite) prefixed variables for
+      client-side values, or move this logic to a server component/API route.
+    severity: ERROR
+    metadata:
+      cwe: "CWE-200: Exposure of Sensitive Information"
+      category: security
+      confidence: MEDIUM
+      impact: HIGH
+    languages: [javascript, typescript]

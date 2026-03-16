@@ -1,0 +1,33 @@
+rules:
+  - id: eval-usage
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+    message: >
+      eval() and new Function() execute arbitrary code and are a major
+      security risk (code injection). Use safer alternatives like
+      JSON.parse() for data or a sandboxed interpreter.
+    severity: ERROR
+    metadata:
+      cwe: "CWE-95: Eval Injection"
+      category: security
+      confidence: HIGH
+      impact: HIGH
+      owasp: "A03:2021 - Injection"
+    languages: [javascript, typescript]
+
+  - id: settimeout-string-arg
+    pattern-either:
+      - pattern: setTimeout("...", ...)
+      - pattern: setInterval("...", ...)
+    message: >
+      setTimeout/setInterval with a string argument acts like eval() and
+      can execute arbitrary code. Pass a function reference instead:
+      setTimeout(() => { ... }, delay)
+    severity: ERROR
+    metadata:
+      cwe: "CWE-95: Eval Injection"
+      category: security
+      confidence: HIGH
+      impact: HIGH
+    languages: [javascript, typescript]

@@ -1,0 +1,46 @@
+rules:
+  - id: nextjs-server-action-unvalidated
+    patterns:
+      - pattern-inside: |
+          "use server"
+          ...
+      - pattern-either:
+          - pattern: |
+              async function $ACTION($FORMDATA) {
+                ...
+                $FORMDATA.get(...)
+                ...
+              }
+          - pattern: |
+              async function $ACTION($DATA) {
+                ...
+              }
+      - pattern-not-inside: |
+          async function $ACTION(...) {
+            ...
+            $SCHEMA.parse(...)
+            ...
+          }
+      - pattern-not-inside: |
+          async function $ACTION(...) {
+            ...
+            $SCHEMA.validate(...)
+            ...
+          }
+      - pattern-not-inside: |
+          async function $ACTION(...) {
+            ...
+            $SCHEMA.safeParse(...)
+            ...
+          }
+    message: >
+      Next.js Server Action processes input without validation. Server
+      Actions are public HTTP endpoints — validate all inputs with Zod
+      or a similar schema library to prevent injection and type confusion.
+    severity: WARNING
+    metadata:
+      cwe: "CWE-20: Improper Input Validation"
+      category: security
+      confidence: MEDIUM
+      framework: nextjs
+    languages: [javascript, typescript]

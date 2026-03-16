@@ -1,0 +1,49 @@
+rules:
+  - id: supabase-service-key-client-side
+    patterns:
+      - pattern: createClient($URL, $KEY, ...)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: .*(service_role|SERVICE_ROLE|service_key|SERVICE_KEY).*
+    paths:
+      exclude:
+        - "server/*"
+        - "api/*"
+        - "lib/server/*"
+        - "*.server.*"
+    message: >
+      Supabase service role key used in client-side code. The service
+      role key bypasses Row Level Security and should only be used in
+      server-side code. Use the anon key for client-side access and
+      rely on RLS policies for security.
+    severity: ERROR
+    metadata:
+      cwe: "CWE-284: Improper Access Control"
+      category: security
+      confidence: HIGH
+      impact: HIGH
+      framework: supabase
+    languages: [javascript, typescript]
+
+  - id: supabase-rls-bypass
+    pattern-either:
+      - pattern: |
+          .$METHOD(...).eq(...).single()
+      - pattern: |
+          .from($TABLE).select(...)
+    paths:
+      exclude:
+        - "server/*"
+        - "api/*"
+    message: >
+      Supabase query without explicit RLS context. Ensure Row Level Security
+      is enabled on this table and that the client uses the anon key with
+      proper RLS policies. Review your Supabase dashboard to verify RLS
+      is not disabled.
+    severity: INFO
+    metadata:
+      cwe: "CWE-284: Improper Access Control"
+      category: security
+      confidence: LOW
+      framework: supabase
+    languages: [javascript, typescript]

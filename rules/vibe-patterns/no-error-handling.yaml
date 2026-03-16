@@ -1,14 +1,38 @@
 rules:
   - id: no-error-handling-fetch
     patterns:
-      - pattern: |
-          fetch($URL)
+      - pattern: fetch(...)
       - pattern-not-inside: |
-          try { ... } catch { ... }
+          try { ... } catch (...) { ... }
+      - pattern-not-inside: |
+          fetch(...).catch(...)
+      - pattern-not-inside: |
+          fetch(...).then(...).catch(...)
     message: >
-      fetch() call without error handling. Network requests can fail — wrap in try/catch.
+      fetch() call without error handling. Network requests can fail —
+      wrap in try/catch or chain .catch() to handle errors gracefully.
     severity: WARNING
     metadata:
-      cwe: "CWE-755"
+      cwe: "CWE-755: Improper Handling of Exceptional Conditions"
       category: quality
+      confidence: MEDIUM
+    languages: [javascript, typescript]
+
+  - id: no-error-handling-axios
+    patterns:
+      - pattern: axios.$METHOD(...)
+      - pattern-not-inside: |
+          try { ... } catch (...) { ... }
+      - pattern-not-inside: |
+          axios.$METHOD(...).catch(...)
+      - pattern-not-inside: |
+          axios.$METHOD(...).then(...).catch(...)
+    message: >
+      axios.$METHOD() call without error handling. Network requests can fail —
+      wrap in try/catch or chain .catch() to handle errors gracefully.
+    severity: WARNING
+    metadata:
+      cwe: "CWE-755: Improper Handling of Exceptional Conditions"
+      category: quality
+      confidence: MEDIUM
     languages: [javascript, typescript]

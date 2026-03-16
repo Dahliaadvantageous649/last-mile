@@ -1,0 +1,24 @@
+rules:
+  - id: cors-wildcard-origin
+    pattern-either:
+      - pattern: |
+          cors({ ..., origin: "*", ... })
+      - pattern: |
+          cors({ origin: "*" })
+      - pattern: |
+          $RES.setHeader("Access-Control-Allow-Origin", "*")
+      - pattern: |
+          $RES.header("Access-Control-Allow-Origin", "*")
+      - pattern: |
+          $RES.set("Access-Control-Allow-Origin", "*")
+    message: >
+      CORS configured with wildcard origin "*" allows any website to make
+      requests to your API. Specify allowed origins explicitly:
+      cors({ origin: ["https://yourdomain.com"] })
+    severity: WARNING
+    metadata:
+      cwe: "CWE-942: Permissive Cross-domain Policy"
+      category: security
+      confidence: HIGH
+      owasp: "A05:2021 - Security Misconfiguration"
+    languages: [javascript, typescript]
