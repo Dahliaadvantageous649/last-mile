@@ -1,13 +1,12 @@
 # Last Mile 360
 
+> **Status: Phase 1 — Building the core scanner.** Architecture defined, monorepo scaffolded, security agent in development. See [Build Order](#build-order) for the full roadmap.
 
 The production-readiness platform for vibe-coded apps. Norton-grade trust. Cloudflare-native. Zero origin servers.
 
 **"We have a 90% finished app. We just need help fixing the last errors."** That last 10% is 95% of the work. This tool does that work.
 
 ---
-
-
 
 
 ## What this is
@@ -20,28 +19,30 @@ It consolidates the best capabilities from 15+ open-source agent frameworks, inf
 
 ---
 
-## Quick start
+## Quick start (coming in Phase 1)
+
+The CLI is under active development. When Phase 1 ships:
 
 ```bash
-# Install
 npm install -g @last-mile/cli
-
-# Authenticate
 last-mile login
-
-# Scan your project
 cd your-vibe-coded-app
-last-mile scan
-
-# See your score
-last-mile score
-
-# Auto-fix what's fixable
-last-mile fix
-
-# Enable continuous monitoring
-last-mile monitor
+last-mile scan       # Scan for security, db, infra, observability, quality issues
+last-mile score      # See your production readiness score (0-100)
+last-mile fix        # Auto-fix what's fixable via PR
+last-mile monitor    # Enable continuous monitoring
 ```
+
+### Development (contribute now)
+
+```bash
+git clone https://github.com/itallstartedwithaidea/last-mile.git
+cd last-mile
+npm install
+npm run dev
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions.
 
 ---
 

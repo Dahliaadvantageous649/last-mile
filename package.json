@@ -1,0 +1,43 @@
+{
+  "name": "last-mile-360",
+  "version": "0.0.1",
+  "private": true,
+  "description": "The production-readiness platform for vibe-coded apps. Norton-grade trust. Cloudflare-native. Zero origin servers.",
+  "workspaces": [
+    "packages/cli",
+    "packages/core",
+    "packages/workers/*",
+    "packages/workers/agents/*",
+    "packages/dashboard",
+    "packages/github-app"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:rules": "node scripts/test-rules.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3",
+    "turbo": "^2",
+    "typescript": "^5",
+    "vitest": "^3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "John Williams <john@itallstartedwithaidea.com>",
+  "license": "MIT",
+  "homepage": "https://googleadsagent.ai/projects/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itallstartedwithaidea/last-mile.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itallstartedwithaidea/last-mile/issues"
+  }
+}

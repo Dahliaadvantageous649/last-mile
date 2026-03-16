@@ -1,0 +1,14 @@
+rules:
+  - id: no-error-handling-fetch
+    patterns:
+      - pattern: |
+          fetch($URL)
+      - pattern-not-inside: |
+          try { ... } catch { ... }
+    message: >
+      fetch() call without error handling. Network requests can fail — wrap in try/catch.
+    severity: WARNING
+    metadata:
+      cwe: "CWE-755"
+      category: quality
+    languages: [javascript, typescript]

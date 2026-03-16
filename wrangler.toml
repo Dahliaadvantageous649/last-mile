@@ -1,0 +1,8 @@
+# Last Mile 360 — Root Cloudflare Workers Configuration
+# Individual workers have their own wrangler.toml in packages/workers/*/
+
+name = "last-mile-360"
+compatibility_date = "2024-12-01"
+
+# Configured per-worker in packages/workers/*/wrangler.toml
+# D1, R2, KV, Vectorize, Queues, Durable Objects, AI Gateway
