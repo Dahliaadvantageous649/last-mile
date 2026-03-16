@@ -18,7 +18,7 @@ jobs:
 
       - name: Run Last Mile 360 on itself
         run: |
-          npx tsx packages/cli/src/index.ts scan . --json > scan-results.json 2>&1 || true
+          npx tsx packages/cli/src/index.ts scan . --json 2>/dev/null > scan-results.json || true
           echo "=== Scan Results ==="
           node -e "
             const r = JSON.parse(require('fs').readFileSync('scan-results.json','utf8'));
